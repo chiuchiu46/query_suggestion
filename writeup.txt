@@ -1,0 +1,19 @@
+Amy Chiu
+Programming Assignment 2
+Writeup
+
+I began working on the assignment by making sure the blob would work. I created an account in Azure Storage Accounts, added a blob containter and uploaded the wiki page titles that I just downloaded from Wikipedia.
+
+I then created a WebServer project and work on the ASMX side. In the ASMX file, there are 3 basic functionalities that I was trying to accomplish: download the file from blob, read the file and build a trie tree, and search the titles.
+
+To access the blob to download the file, I added the appSettings to Web.config, adding the key and value to link to the blob. In the Download function, I use the functions provided in class. If the cloud blob container exist then download the file to the file path. Knowing that the connection would work, I trimed the wiki title file such that the titles with digits or with non-English characters were removed. I then reuploaded the file to the blob. Also to save myself some time from downloading file (when writing the ReadAndBuildTree function), I used a test file with less than 25 lines of "title".
+
+After making sure Download works, I jump to work on the trie structure. I created a class name TrieNode, where each node will have a dictionary of children and a booleann to determine whether the node is a word. And then in my TrieTree class, I have a private field name root. I use the recursive method to add and search for title.
+
+With the TrieNode and TrieTree classes working, now I could work on ReadAndBuildTree function. Reading the file is easy; I simply use StreamReader to read through every line in the file till there's no more line. However the problem comes with the building tree part. The wiki page title file is enormously huge and I would run into OutOfMemoryException when I'm adding the TreeNodes. What I wanted to do is to continue adding the titles till I have 20MB left, which is left for the processing of the file. To make this happen, I added a private performance counter that returns the memory space left. So after building every 100 lines of title, I would call this performance counter. If the memory space left is less than 20MB then I'll exit the file. 
+
+I combined Download and ReadAndBuildTree functions to a private function named Load, where I used try and catch and call these two functions if and only if the TrieTree root is empty. By doing so I don't have to download and build tree every single time I'm searching for some title.
+
+In the SearchTitles function, I first called the Load function. And then I used the search function from TrieTree class to get a list of search result, converting this list of string to JSON and then return the JSON data. 
+
+With the ASMX all set, I now could work on the HTML and JavaScript. In the HTML body, there is simply an input box. I want to allow the user to type in something and AJAX would show a list of search result. I did so by using jQuery autocomplete. When the user typed in something into the text box, the script will call another ajax function that calls the SearchTitles function from my ASMX file. The SearchTitles function will then call the TrieTree's search function, return a list of search result, which ASMX will convert to JSON and then be returned to the AJAX script and be displayed below the text box. 
